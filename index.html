@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 社區消費大獎賞 · 家庭記錄</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#FAF7F2;--card:#FFFFFF;--border:#E8E4DF;--text:#4A4A4A;--text-light:#8A8A8A;
+  --primary:#8B7355;--accent:#E8A87C;--accent-light:#F5DCC8;
+  --success:#7EAE7A;--danger:#D4756A;
+  --roy:#D4A574;--chelsea:#C1A0C1;--choiba:#7EB5C7;--ha:#A8C97F;
+  --radius:12px;--shadow:0 1px 3px rgba(0,0,0,0.08);
+}
+body{
+  font-family:"Noto Sans TC","Hiragino Sans","Microsoft JhengHei",sans-serif;
+  background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;
+  min-height:100vh;font-weight:300;
+}
+.app{max-width:420px;margin:0 auto;padding:12px 16px 80px}
+h1{font-size:16px;font-weight:400;text-align:center;color:var(--primary);padding:16px 0 4px;letter-spacing:1px}
+.subtitle{text-align:center;font-size:11px;color:var(--text-light);margin-bottom:16px}
+
+/* Week selector */
+.week-bar{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.week-bar select{
+  flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;
+  background:var(--card);font-size:13px;color:var(--text);font-family:inherit;
+  appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238B7355'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;
+}
+.week-status{
+  font-size:11px;padding:3px 8px;border-radius:10px;white-space:nowrap;
+}
+.week-status.active{background:#E8F5E9;color:#4CAF50}
+.week-status.past{background:#F3E5F5;color:#9C27B0}
+.week-status.future{background:#E3F2FD;color:#64B5F6}
+
+/* Member tabs */
+.member-tabs{display:flex;gap:4px;margin-bottom:16px}
+.member-tab{
+  flex:1;padding:8px 4px;text-align:center;border:none;border-radius:8px 8px 0 0;
+  cursor:pointer;font-size:12px;font-family:inherit;font-weight:400;
+  background:var(--border);color:var(--text-light);transition:all .2s;
+}
+.member-tab.active{color:#fff;font-weight:500;box-shadow:var(--shadow)}
+.member-tab[data-member="Roy"].active{background:var(--roy)}
+.member-tab[data-member="Chelsea"].active{background:var(--chelsea)}
+.member-tab[data-member="Choi Ba"].active{background:var(--choiba)}
+.member-tab[data-member="Ha"].active{background:var(--ha)}
+
+/* Section */
+.section{margin-bottom:20px}
+.section-title{
+  font-size:13px;font-weight:400;color:var(--primary);
+  border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:10px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.section-badge{
+  font-size:11px;background:var(--accent-light);color:var(--primary);
+  padding:2px 8px;border-radius:10px;
+}
+
+/* Platform card */
+.platform-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  margin-bottom:8px;overflow:hidden;box-shadow:var(--shadow);
+}
+.platform-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;cursor:pointer;user-select:none;
+}
+.platform-name{font-size:13px;font-weight:400;color:var(--primary)}
+.platform-summary{font-size:11px;color:var(--text-light);max-width:200px;text-align:right}
+.platform-summary .won{color:var(--success);font-weight:500}
+.platform-toggle{
+  width:20px;height:20px;display:flex;align-items:center;justify-content:center;
+  color:var(--text-light);transition:transform .2s;font-size:11px;
+}
+.platform-toggle.open{transform:rotate(180deg)}
+.platform-body{display:none;padding:0 14px 12px;border-top:1px solid var(--border)}
+.platform-body.open{display:block}
+
+.form-row{display:flex;gap:8px;margin-top:8px;align-items:center}
+.form-row label{font-size:11px;color:var(--text-light);min-width:36px}
+.form-row input,.form-row select{
+  flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:8px;
+  font-size:13px;font-family:inherit;background:var(--card);color:var(--text);
+}
+.form-row input:focus,.form-row select:focus{outline:none;border-color:var(--accent)}
+.draw-results{display:flex;gap:6px;margin-top:8px}
+.draw-results select{
+  flex:1;padding:6px 4px;border:1px solid var(--border);border-radius:8px;
+  font-size:12px;font-family:inherit;text-align:center;background:var(--card);color:var(--text);
+}
+.draw-results select:focus{outline:none;border-color:var(--accent)}
+.draw-label{font-size:11px;color:var(--text-light);margin-top:8px;margin-bottom:2px}
+
+/* Redemption */
+.coupon-list{display:flex;flex-direction:column;gap:6px}
+.coupon-group{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:10px 14px;box-shadow:var(--shadow);
+}
+.coupon-group-header{
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;
+}
+.coupon-group-name{font-size:12px;color:var(--primary);font-weight:400}
+.coupon-group-info{font-size:11px;color:var(--text-light)}
+.coupon-chips{display:flex;gap:6px;flex-wrap:wrap}
+.coupon-chip{
+  padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;
+  border:1px solid var(--border);background:var(--bg);color:var(--text);
+  transition:all .2s;user-select:none;
+}
+.coupon-chip.used{
+  background:var(--success);color:#fff;border-color:var(--success);
+}
+.coupon-chip.zero{
+  background:#f0f0f0;color:#bbb;border-color:#e0e0e0;cursor:default;
+}
+.no-coupons{font-size:12px;color:var(--text-light);text-align:center;padding:16px}
+
+/* Weekday spends */
+.spend-list{display:flex;flex-direction:column;gap:6px}
+.spend-item{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:8px 14px;box-shadow:var(--shadow);display:flex;align-items:center;gap:8px;
+}
+.spend-item input{
+  border:1px solid var(--border);border-radius:8px;padding:6px 10px;
+  font-size:13px;font-family:inherit;background:var(--card);color:var(--text);
+}
+.spend-item input:focus{outline:none;border-color:var(--accent)}
+.spend-item .merchant{flex:1.5}
+.spend-item .amount{flex:1;text-align:right}
+.spend-qualified{font-size:10px;color:var(--success);margin-left:4px}
+.spend-remove{
+  background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;
+  padding:0 4px;font-family:inherit;
+}
+.add-btn{
+  display:block;width:100%;padding:8px;border:1px dashed var(--border);
+  border-radius:var(--radius);background:none;color:var(--text-light);
+  font-size:12px;cursor:pointer;font-family:inherit;margin-top:6px;
+}
+.add-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* Weekly prize */
+.prize-row{
+  display:flex;align-items:center;gap:8px;margin-top:10px;
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:8px 14px;box-shadow:var(--shadow);
+}
+.prize-row label{font-size:12px;color:var(--text-light);white-space:nowrap}
+.prize-row input{
+  flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:8px;
+  font-size:13px;font-family:inherit;background:var(--card);color:var(--text);text-align:right;
+}
+.prize-row input:focus{outline:none;border-color:var(--accent)}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:10px 14px;box-shadow:var(--shadow);text-align:center;
+}
+.stat-label{font-size:10px;color:var(--text-light);margin-bottom:2px}
+.stat-value{font-size:18px;font-weight:500;color:var(--primary)}
+.stat-value.accent{color:var(--accent)}
+.stat-value.success{color:var(--success)}
+.stat-divider{
+  grid-column:1/-1;font-size:11px;color:var(--text-light);text-align:center;
+  padding:4px 0;border-top:1px solid var(--border);margin-top:4px;
+}
+
+/* Nav tabs for sections */
+.section-tabs{display:flex;gap:2px;margin-bottom:16px;background:var(--border);border-radius:8px;padding:2px}
+.section-tab{
+  flex:1;padding:7px 4px;text-align:center;border:none;border-radius:6px;
+  cursor:pointer;font-size:12px;font-family:inherit;font-weight:400;
+  background:transparent;color:var(--text-light);transition:all .2s;
+}
+.section-tab.active{background:var(--card);color:var(--primary);box-shadow:var(--shadow)}
+.section-content{display:none}
+.section-content.active{display:block}
+
+/* Utility */
+.text-center{text-align:center}
+.mt-8{margin-top:8px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>社區消費大獎賞 2026</h1>
+  <div class="subtitle">家庭記錄 · 4月10日 – 6月18日</div>
+
+  <!-- Week selector -->
+  <div class="week-bar">
+    <select id="weekSelect"></select>
+    <span id="weekStatus" class="week-status"></span>
+  </div>
+
+  <!-- Member tabs -->
+  <div class="member-tabs" id="memberTabs"></div>
+
+  <!-- Section tabs -->
+  <div class="section-tabs">
+    <button class="section-tab active" data-section="draws">抽獎</button>
+    <button class="section-tab" data-section="redeem">核銷</button>
+    <button class="section-tab" data-section="weekday">平日消費</button>
+    <button class="section-tab" data-section="stats">統計</button>
+  </div>
+
+  <!-- Draw section -->
+  <div class="section-content active" id="sec-draws">
+    <div class="section">
+      <div class="section-title">
+        <span>週末抽獎（五至日）</span>
+        <span class="section-badge" id="drawBadge">0/8 平台</span>
+      </div>
+      <div id="platformList"></div>
+    </div>
+  </div>
+
+  <!-- Redeem section -->
+  <div class="section-content" id="sec-redeem">
+    <div class="section">
+      <div class="section-title">
+        <span>優惠核銷（一至四）</span>
+        <span class="section-badge" id="redeemBadge">0 已用</span>
+      </div>
+      <div id="couponList" class="coupon-list"></div>
+    </div>
+  </div>
+
+  <!-- Weekday section -->
+  <div class="section-content" id="sec-weekday">
+    <div class="section">
+      <div class="section-title">
+        <span>平日消費（一至四）</span>
+        <span class="section-badge" id="weekdayBadge">0 筆</span>
+      </div>
+      <div id="spendList" class="spend-list"></div>
+      <button class="add-btn" id="addSpendBtn">+ 新增消費</button>
+
+      <div class="prize-row mt-8">
+        <label>每週抽獎獎金</label>
+        <input type="number" id="weeklyPrize" placeholder="0" min="0">
+        <span style="font-size:12px;color:var(--text-light)">MOP</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats section -->
+  <div class="section-content" id="sec-stats">
+    <div class="section">
+      <div class="section-title"><span>個人統計</span></div>
+      <div class="stats-grid" id="personalStats"></div>
+    </div>
+    <div class="section">
+      <div class="section-title"><span>全家合計</span></div>
+      <div class="stats-grid" id="familyStats"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MEMBERS = ["Roy", "Chelsea", "Choi Ba", "Ha"];
+const PLATFORMS = ["中銀", "大豐", "國際", "MPay", "UePay", "工商", "AliPay", "廣發"];
+const COUPON_VALUES = [0, 10, 20, 50, 100, 200];
+const WEEK_START = new Date(2026, 3, 10); // Apr 10 2026 (Friday)
+const TOTAL_WEEKS = 10;
+const STORAGE_KEY = "mo_spending_2026";
+
+let state = { currentMember: MEMBERS[0], currentWeek: 1 };
+
+// --- Data ---
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || initData(); }
+  catch { return initData(); }
+}
+function initData() {
+  const d = { members: MEMBERS, platforms: PLATFORMS, weeks: {} };
+  for (let w = 1; w <= TOTAL_WEEKS; w++) {
+    d.weeks[w] = {};
+    MEMBERS.forEach(m => {
+      d.weeks[w][m] = { draws: {}, redeemed: {}, weekdaySpends: [], weeklyPrizeWon: 0 };
+    });
+  }
+  saveData(d);
+  return d;
+}
+function saveData(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+function getMemberWeek(d) { return d.weeks[state.currentWeek][state.currentMember]; }
+
+let data = loadData();
+
+// --- Week helpers ---
+function weekStartDate(w) {
+  const d = new Date(WEEK_START);
+  d.setDate(d.getDate() + (w - 1) * 7);
+  return d;
+}
+function weekEndDate(w) {
+  const d = weekStartDate(w);
+  d.setDate(d.getDate() + 6);
+  return d;
+}
+function fmtDate(d) {
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
+function getWeekStatus(w) {
+  const now = new Date();
+  const s = weekStartDate(w), e = weekEndDate(w);
+  e.setHours(23,59,59);
+  if (now < s) return "future";
+  if (now > e) return "past";
+  return "active";
+}
+function getCurrentWeek() {
+  const now = new Date();
+  for (let w = TOTAL_WEEKS; w >= 1; w--) {
+    if (now >= weekStartDate(w)) return w;
+  }
+  return 1;
+}
+
+// --- Render: Week selector ---
+function renderWeekSelect() {
+  const sel = document.getElementById("weekSelect");
+  sel.innerHTML = "";
+  for (let w = 1; w <= TOTAL_WEEKS; w++) {
+    const s = weekStartDate(w), e = weekEndDate(w);
+    const opt = document.createElement("option");
+    opt.value = w;
+    opt.textContent = `第 ${w} 週（${fmtDate(s)} – ${fmtDate(e)}）`;
+    sel.appendChild(opt);
+  }
+  sel.value = state.currentWeek;
+  sel.onchange = () => { state.currentWeek = +sel.value; renderAll(); };
+  renderWeekStatus();
+}
+function renderWeekStatus() {
+  const el = document.getElementById("weekStatus");
+  const s = getWeekStatus(state.currentWeek);
+  el.className = "week-status " + s;
+  el.textContent = s === "active" ? "進行中" : s === "past" ? "已完成" : "未開始";
+}
+
+// --- Render: Member tabs ---
+function renderMemberTabs() {
+  const container = document.getElementById("memberTabs");
+  container.innerHTML = "";
+  MEMBERS.forEach(m => {
+    const btn = document.createElement("button");
+    btn.className = "member-tab" + (m === state.currentMember ? " active" : "");
+    btn.dataset.member = m;
+    btn.textContent = m;
+    btn.onclick = () => { state.currentMember = m; renderAll(); };
+    container.appendChild(btn);
+  });
+}
+
+// --- Render: Platforms / Draws ---
+function renderPlatforms() {
+  const container = document.getElementById("platformList");
+  container.innerHTML = "";
+  const mw = getMemberWeek(data);
+  let usedCount = 0;
+  let totalWon = 0;
+
+  PLATFORMS.forEach(p => {
+    const draw = mw.draws[p];
+    const hasData = draw && draw.results && draw.results.some(r => r > 0 || draw.merchant || draw.spentAmount);
+    if (hasData) usedCount++;
+
+    const card = document.createElement("div");
+    card.className = "platform-card";
+
+    // Summary text
+    let summaryHTML = '<span style="color:var(--text-light)">未參與</span>';
+    if (draw && draw.results) {
+      const parts = draw.results.map(r => r > 0 ? `<span class="won">$${r}</span>` : "—");
+      summaryHTML = parts.join(" · ");
+      totalWon += draw.results.reduce((a, b) => a + b, 0);
+    }
+
+    const header = document.createElement("div");
+    header.className = "platform-header";
+    header.innerHTML = `
+      <span class="platform-name">${p}</span>
+      <span class="platform-summary">${summaryHTML}</span>
+      <span class="platform-toggle">▼</span>
+    `;
+    card.appendChild(header);
+
+    const body = document.createElement("div");
+    body.className = "platform-body";
+    body.innerHTML = `
+      <div class="form-row">
+        <label>商戶</label>
+        <input type="text" data-p="${p}" data-field="merchant" placeholder="商戶名稱" value="${draw?.merchant || ""}">
+      </div>
+      <div class="form-row">
+        <label>金額</label>
+        <input type="number" data-p="${p}" data-field="spentAmount" placeholder="≥50" min="50" value="${draw?.spentAmount || ""}">
+        <span style="font-size:12px;color:var(--text-light)">MOP</span>
+      </div>
+      <div class="draw-label">抽獎結果</div>
+      <div class="draw-results">
+        ${[0,1,2].map(i => `
+          <select data-p="${p}" data-idx="${i}">
+            ${COUPON_VALUES.map(v => `<option value="${v}" ${draw?.results?.[i] === v ? "selected" : ""}>${v === 0 ? "未中獎" : "$" + v}</option>`).join("")}
+          </select>
+        `).join("")}
+      </div>
+    `;
+    card.appendChild(body);
+
+    header.onclick = () => {
+      const isOpen = body.classList.contains("open");
+      body.classList.toggle("open");
+      header.querySelector(".platform-toggle").classList.toggle("open");
+    };
+
+    // Auto-save on input change
+    body.querySelectorAll("input, select").forEach(el => {
+      el.addEventListener("change", () => savePlatformDraw(p));
+    });
+
+    container.appendChild(card);
+  });
+
+  document.getElementById("drawBadge").textContent = `${usedCount}/8 平台 · $${totalWon}`;
+}
+
+function savePlatformDraw(platform) {
+  const mw = getMemberWeek(data);
+  if (!mw.draws[platform]) mw.draws[platform] = { merchant: "", spentAmount: 0, results: [0, 0, 0] };
+  const draw = mw.draws[platform];
+
+  const merchantInput = document.querySelector(`input[data-p="${platform}"][data-field="merchant"]`);
+  const amountInput = document.querySelector(`input[data-p="${platform}"][data-field="spentAmount"]`);
+  draw.merchant = merchantInput?.value || "";
+  draw.spentAmount = +(amountInput?.value) || 0;
+  draw.results = [0, 1, 2].map(i => {
+    const sel = document.querySelector(`select[data-p="${platform}"][data-idx="${i}"]`);
+    return +(sel?.value) || 0;
+  });
+
+  // Clean empty draws
+  if (!draw.merchant && !draw.spentAmount && draw.results.every(r => r === 0)) {
+    delete mw.draws[platform];
+  }
+
+  saveData(data);
+  renderPlatforms();
+  renderCoupons();
+  renderStats();
+}
+
+// --- Render: Coupons / Redemption ---
+function renderCoupons() {
+  const container = document.getElementById("couponList");
+  container.innerHTML = "";
+  const mw = getMemberWeek(data);
+  if (!mw.redeemed) mw.redeemed = {};
+
+  let totalCoupons = 0, usedCount = 0;
+  const platformsWithCoupons = [];
+
+  PLATFORMS.forEach(p => {
+    const draw = mw.draws[p];
+    if (!draw || !draw.results) return;
+    const coupons = draw.results.filter(r => r > 0);
+    if (coupons.length === 0) return;
+    platformsWithCoupons.push(p);
+  });
+
+  if (platformsWithCoupons.length === 0) {
+    container.innerHTML = '<div class="no-coupons">本週未有中獎券</div>';
+    document.getElementById("redeemBadge").textContent = "0 張券";
+    return;
+  }
+
+  platformsWithCoupons.forEach(p => {
+    const draw = mw.draws[p];
+    const results = draw.results;
+    if (!mw.redeemed[p]) mw.redeemed[p] = [false, false, false];
+
+    const group = document.createElement("div");
+    group.className = "coupon-group";
+
+    const wonResults = results.filter(r => r > 0);
+    const groupTotal = wonResults.reduce((a, b) => a + b, 0);
+    const minSpend = groupTotal * 3;
+
+    group.innerHTML = `
+      <div class="coupon-group-header">
+        <span class="coupon-group-name">${p}</span>
+        <span class="coupon-group-info">合計 $${groupTotal} · 最低消費 $${minSpend}</span>
+      </div>
+      <div class="coupon-chips" data-platform="${p}"></div>
+    `;
+
+    const chipsContainer = group.querySelector(".coupon-chips");
+    results.forEach((r, i) => {
+      totalCoupons++;
+      const chip = document.createElement("span");
+      if (r === 0) {
+        chip.className = "coupon-chip zero";
+        chip.textContent = "—";
+      } else {
+        const isUsed = mw.redeemed[p]?.[i] || false;
+        if (isUsed) usedCount++;
+        chip.className = "coupon-chip" + (isUsed ? " used" : "");
+        chip.textContent = (isUsed ? "✓ " : "") + "$" + r;
+        chip.onclick = () => {
+          mw.redeemed[p][i] = !mw.redeemed[p][i];
+          saveData(data);
+          renderCoupons();
+          renderStats();
+        };
+      }
+      chipsContainer.appendChild(chip);
+    });
+
+    container.appendChild(group);
+  });
+
+  const wonOnly = totalCoupons - document.querySelectorAll(".coupon-chip.zero").length;
+  document.getElementById("redeemBadge").textContent = `${usedCount}/${wonOnly} 已用`;
+}
+
+// --- Render: Weekday Spends ---
+function renderWeekdaySpends() {
+  const container = document.getElementById("spendList");
+  container.innerHTML = "";
+  const mw = getMemberWeek(data);
+  if (!mw.weekdaySpends) mw.weekdaySpends = [];
+
+  mw.weekdaySpends.forEach((s, i) => {
+    const item = document.createElement("div");
+    item.className = "spend-item";
+    item.innerHTML = `
+      <input class="merchant" type="text" placeholder="商戶" value="${s.merchant || ""}" data-idx="${i}" data-field="merchant">
+      <input class="amount" type="number" placeholder="金額" value="${s.spentAmount || ""}" data-idx="${i}" data-field="spentAmount" min="0">
+      <span style="font-size:11px;color:var(--text-light)">MOP</span>
+      ${s.spentAmount >= 50 ? '<span class="spend-qualified">✓ 資格</span>' : ''}
+      <button class="spend-remove" data-idx="${i}">&times;</button>
+    `;
+    item.querySelectorAll("input").forEach(el => {
+      el.addEventListener("change", () => {
+        const idx = +el.dataset.idx;
+        const field = el.dataset.field;
+        if (field === "spentAmount") mw.weekdaySpends[idx][field] = +el.value || 0;
+        else mw.weekdaySpends[idx][field] = el.value;
+        saveData(data);
+        renderWeekdaySpends();
+        renderStats();
+      });
+    });
+    item.querySelector(".spend-remove").onclick = () => {
+      mw.weekdaySpends.splice(i, 1);
+      saveData(data);
+      renderWeekdaySpends();
+      renderStats();
+    };
+    container.appendChild(item);
+  });
+
+  document.getElementById("weekdayBadge").textContent = `${mw.weekdaySpends.length} 筆`;
+
+  // Weekly prize
+  const prizeInput = document.getElementById("weeklyPrize");
+  prizeInput.value = mw.weeklyPrizeWon || "";
+  prizeInput.onchange = () => {
+    mw.weeklyPrizeWon = +prizeInput.value || 0;
+    saveData(data);
+    renderStats();
+  };
+}
+
+document.getElementById("addSpendBtn").onclick = () => {
+  const mw = getMemberWeek(data);
+  mw.weekdaySpends.push({ date: "", merchant: "", spentAmount: 0 });
+  saveData(data);
+  renderWeekdaySpends();
+};
+
+// --- Render: Stats ---
+function renderStats() {
+  // Personal stats for current member, current week
+  const mw = getMemberWeek(data);
+  let weekSpent = 0, weekCoupons = 0, weekRedeemed = 0, unusedCount = 0, unusedValue = 0;
+
+  // Draw spending
+  Object.values(mw.draws).forEach(d => { weekSpent += d.spentAmount || 0; });
+  // Weekday spending
+  (mw.weekdaySpends || []).forEach(s => { weekSpent += s.spentAmount || 0; });
+
+  // Coupons
+  Object.entries(mw.draws).forEach(([p, d]) => {
+    (d.results || []).forEach((r, i) => {
+      if (r > 0) {
+        weekCoupons += r;
+        if (mw.redeemed?.[p]?.[i]) weekRedeemed += r;
+        else { unusedCount++; unusedValue += r; }
+      }
+    });
+  });
+
+  const personalHTML = `
+    <div class="stat-card"><div class="stat-label">本週消費</div><div class="stat-value">$${weekSpent}</div></div>
+    <div class="stat-card"><div class="stat-label">抽中優惠</div><div class="stat-value accent">$${weekCoupons}</div></div>
+    <div class="stat-card"><div class="stat-label">已核銷</div><div class="stat-value success">$${weekRedeemed}</div></div>
+    <div class="stat-card"><div class="stat-label">未核銷</div><div class="stat-value">${unusedCount}張 $${unusedValue}</div></div>
+    <div class="stat-card"><div class="stat-label">每週獎金</div><div class="stat-value accent">$${mw.weeklyPrizeWon || 0}</div></div>
+  `;
+  document.getElementById("personalStats").innerHTML = personalHTML;
+
+  // Family total (all weeks, all members)
+  let famSpent = 0, famCoupons = 0, famRedeemed = 0, famDraws = 0, famWon = 0, famPrize = 0;
+  for (let w = 1; w <= TOTAL_WEEKS; w++) {
+    MEMBERS.forEach(m => {
+      const mwd = data.weeks[w]?.[m];
+      if (!mwd) return;
+      Object.values(mwd.draws || {}).forEach(d => {
+        famSpent += d.spentAmount || 0;
+        (d.results || []).forEach((r, i) => {
+          famDraws++;
+          if (r > 0) {
+            famWon++;
+            famCoupons += r;
+            if (mwd.redeemed?.[Object.keys(mwd.draws).find(k => mwd.draws[k] === d)]?.[i]) famRedeemed += r;
+          }
+        });
+      });
+      (mwd.weekdaySpends || []).forEach(s => { famSpent += s.spentAmount || 0; });
+      famPrize += mwd.weeklyPrizeWon || 0;
+    });
+  }
+  const winRate = famDraws > 0 ? Math.round(famWon / famDraws * 100) : 0;
+
+  const familyHTML = `
+    <div class="stat-card"><div class="stat-label">累計總消費</div><div class="stat-value">$${famSpent}</div></div>
+    <div class="stat-card"><div class="stat-label">累計優惠</div><div class="stat-value accent">$${famCoupons}</div></div>
+    <div class="stat-card"><div class="stat-label">累計已核銷</div><div class="stat-value success">$${famRedeemed}</div></div>
+    <div class="stat-card"><div class="stat-label">中獎率</div><div class="stat-value">${winRate}%</div></div>
+    <div class="stat-card"><div class="stat-label">累計獎金</div><div class="stat-value accent">$${famPrize}</div></div>
+  `;
+  document.getElementById("familyStats").innerHTML = familyHTML;
+}
+
+// --- Section tabs ---
+document.querySelectorAll(".section-tab").forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll(".section-tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".section-content").forEach(s => s.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("sec-" + tab.dataset.section).classList.add("active");
+  };
+});
+
+// --- Render all ---
+function renderAll() {
+  renderWeekSelect();
+  renderMemberTabs();
+  renderPlatforms();
+  renderCoupons();
+  renderWeekdaySpends();
+  renderStats();
+}
+
+// Init
+state.currentWeek = getCurrentWeek();
+renderAll();
+</script>
+</body>
+</html>
