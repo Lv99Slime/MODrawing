@@ -186,6 +186,71 @@ h1{font-size:16px;font-weight:400;text-align:center;color:var(--primary);padding
 .section-content{display:none}
 .section-content.active{display:block}
 
+/* OCR upload */
+.ocr-box{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px;margin-bottom:12px;box-shadow:var(--shadow);
+}
+.ocr-box .ocr-title{font-size:13px;color:var(--primary);margin-bottom:8px}
+.ocr-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.ocr-row select,.ocr-row label{font-size:12px;font-family:inherit}
+.ocr-row select{
+  flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:8px;
+  background:var(--card);color:var(--text);
+}
+.ocr-file-label{
+  display:block;padding:10px;border:2px dashed var(--border);border-radius:var(--radius);
+  text-align:center;cursor:pointer;color:var(--text-light);font-size:12px;
+  transition:all .2s;
+}
+.ocr-file-label:hover{border-color:var(--accent);color:var(--accent)}
+.ocr-file-label.has-file{border-color:var(--success);color:var(--success)}
+.ocr-preview{max-width:100%;max-height:150px;border-radius:8px;margin-top:8px;display:none}
+.ocr-btn{
+  width:100%;padding:10px;border:none;border-radius:8px;background:var(--accent);
+  color:#fff;font-size:13px;font-family:inherit;cursor:pointer;margin-top:8px;
+  transition:all .2s;
+}
+.ocr-btn:hover{background:var(--primary)}
+.ocr-btn:disabled{background:var(--border);color:var(--text-light);cursor:not-allowed}
+.ocr-status{font-size:11px;color:var(--text-light);text-align:center;margin-top:6px;min-height:16px}
+.ocr-result{
+  background:var(--bg);border:1px solid var(--border);border-radius:8px;
+  padding:10px;margin-top:8px;font-size:12px;display:none;
+}
+.ocr-result .result-row{display:flex;justify-content:space-between;padding:3px 0}
+.ocr-result .result-label{color:var(--text-light)}
+.ocr-result .result-value{font-weight:500;color:var(--primary)}
+.ocr-confirm-btn{
+  width:100%;padding:8px;border:none;border-radius:8px;background:var(--success);
+  color:#fff;font-size:13px;font-family:inherit;cursor:pointer;margin-top:8px;
+}
+
+/* Settings gear */
+.settings-toggle{
+  position:fixed;bottom:16px;right:16px;width:36px;height:36px;border-radius:50%;
+  background:var(--card);border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.1);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  font-size:16px;color:var(--primary);z-index:100;
+}
+.settings-panel{
+  display:none;position:fixed;bottom:60px;right:16px;width:300px;
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:0 4px 16px rgba(0,0,0,0.12);padding:16px;z-index:100;
+}
+.settings-panel.open{display:block}
+.settings-panel h3{font-size:13px;font-weight:400;color:var(--primary);margin-bottom:8px}
+.settings-panel input{
+  width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;
+  font-size:12px;font-family:inherit;background:var(--bg);color:var(--text);
+}
+.settings-panel input:focus{outline:none;border-color:var(--accent)}
+.settings-panel .hint{font-size:10px;color:var(--text-light);margin-top:4px}
+.settings-save{
+  margin-top:8px;padding:6px 16px;border:none;border-radius:8px;
+  background:var(--accent);color:#fff;font-size:12px;font-family:inherit;cursor:pointer;
+}
+
 /* Utility */
 .text-center{text-align:center}
 .mt-8{margin-top:8px}
@@ -216,6 +281,23 @@ h1{font-size:16px;font-weight:400;text-align:center;color:var(--primary);padding
 
   <!-- Draw section -->
   <div class="section-content active" id="sec-draws">
+    <!-- OCR upload -->
+    <div class="ocr-box">
+      <div class="ocr-title">截圖識別</div>
+      <div class="ocr-row">
+        <label>抽獎者</label>
+        <select id="ocrMember"></select>
+      </div>
+      <label class="ocr-file-label" id="ocrFileLabel">
+        點擊上傳抽獎結果截圖
+        <input type="file" accept="image/*" id="ocrFileInput" style="display:none">
+      </label>
+      <img id="ocrPreview" class="ocr-preview">
+      <button class="ocr-btn" id="ocrBtn" disabled>分析截圖</button>
+      <div class="ocr-status" id="ocrStatus"></div>
+      <div class="ocr-result" id="ocrResult"></div>
+    </div>
+
     <div class="section">
       <div class="section-title">
         <span>週末抽獎（五至日）</span>
@@ -264,6 +346,15 @@ h1{font-size:16px;font-weight:400;text-align:center;color:var(--primary);padding
       <div class="section-title"><span>全家合計</span></div>
       <div class="stats-grid" id="familyStats"></div>
     </div>
+  </div>
+  <!-- Settings -->
+  <div class="settings-toggle" id="settingsToggle">⚙</div>
+  <div class="settings-panel" id="settingsPanel">
+    <h3>設定</h3>
+    <label style="font-size:11px;color:var(--text-light)">Gemini API Key</label>
+    <input type="password" id="apiKeyInput" placeholder="AIzaSy...">
+    <div class="hint">用於截圖識別功能，儲存於本機</div>
+    <button class="settings-save" id="saveApiKey">儲存</button>
   </div>
 </div>
 
@@ -365,6 +456,8 @@ function renderMemberTabs() {
 }
 
 // --- Render: Platforms / Draws ---
+let openPlatforms = new Set();
+
 function renderPlatforms() {
   const container = document.getElementById("platformList");
   container.innerHTML = "";
@@ -388,17 +481,18 @@ function renderPlatforms() {
       totalWon += draw.results.reduce((a, b) => a + b, 0);
     }
 
+    const isOpen = openPlatforms.has(p);
     const header = document.createElement("div");
     header.className = "platform-header";
     header.innerHTML = `
       <span class="platform-name">${p}</span>
       <span class="platform-summary">${summaryHTML}</span>
-      <span class="platform-toggle">▼</span>
+      <span class="platform-toggle${isOpen ? " open" : ""}">▼</span>
     `;
     card.appendChild(header);
 
     const body = document.createElement("div");
-    body.className = "platform-body";
+    body.className = "platform-body" + (isOpen ? " open" : "");
     body.innerHTML = `
       <div class="form-row">
         <label>商戶</label>
@@ -421,12 +515,13 @@ function renderPlatforms() {
     card.appendChild(body);
 
     header.onclick = () => {
-      const isOpen = body.classList.contains("open");
+      if (openPlatforms.has(p)) openPlatforms.delete(p);
+      else openPlatforms.add(p);
       body.classList.toggle("open");
       header.querySelector(".platform-toggle").classList.toggle("open");
     };
 
-    // Auto-save on input change
+    // Auto-save on input change — no re-render, just save + update badge/stats
     body.querySelectorAll("input, select").forEach(el => {
       el.addEventListener("change", () => savePlatformDraw(p));
     });
@@ -457,9 +552,34 @@ function savePlatformDraw(platform) {
   }
 
   saveData(data);
-  renderPlatforms();
+  // Update badge without full re-render
+  updateDrawBadge();
   renderCoupons();
   renderStats();
+}
+
+function updateDrawBadge() {
+  const mw = getMemberWeek(data);
+  let usedCount = 0, totalWon = 0;
+  PLATFORMS.forEach(p => {
+    const draw = mw.draws[p];
+    if (draw && draw.results && draw.results.some(r => r > 0 || draw.merchant || draw.spentAmount)) usedCount++;
+    if (draw && draw.results) totalWon += draw.results.reduce((a, b) => a + b, 0);
+  });
+  document.getElementById("drawBadge").textContent = `${usedCount}/8 平台 · $${totalWon}`;
+  // Also update summary text for this platform in the header
+  PLATFORMS.forEach(p => {
+    const draw = mw.draws[p];
+    const card = document.querySelector(`.platform-card:nth-child(${PLATFORMS.indexOf(p)+1})`);
+    if (!card) return;
+    const summary = card.querySelector(".platform-summary");
+    if (!summary) return;
+    if (draw && draw.results && draw.results.some(r => r > 0)) {
+      summary.innerHTML = draw.results.map(r => r > 0 ? `<span class="won">$${r}</span>` : "—").join(" · ");
+    } else if (!draw || !draw.merchant && !draw.spentAmount) {
+      summary.innerHTML = '<span style="color:var(--text-light)">未參與</span>';
+    }
+  });
 }
 
 // --- Render: Coupons / Redemption ---
@@ -486,6 +606,8 @@ function renderCoupons() {
     return;
   }
 
+  let grandTotal = 0, grandMinSpend = 0;
+
   platformsWithCoupons.forEach(p => {
     const draw = mw.draws[p];
     const results = draw.results;
@@ -497,6 +619,8 @@ function renderCoupons() {
     const wonResults = results.filter(r => r > 0);
     const groupTotal = wonResults.reduce((a, b) => a + b, 0);
     const minSpend = groupTotal * 3;
+    grandTotal += groupTotal;
+    grandMinSpend += minSpend;
 
     group.innerHTML = `
       <div class="coupon-group-header">
@@ -530,6 +654,17 @@ function renderCoupons() {
 
     container.appendChild(group);
   });
+
+  // Grand total summary
+  if (platformsWithCoupons.length > 1) {
+    const totalBar = document.createElement("div");
+    totalBar.className = "coupon-group";
+    totalBar.style.background = "var(--accent-light)";
+    totalBar.style.textAlign = "center";
+    totalBar.style.padding = "10px 14px";
+    totalBar.innerHTML = `<span style="font-size:13px;color:var(--primary);font-weight:500">全部合計 $${grandTotal} · 總最低消費 $${grandMinSpend}</span>`;
+    container.appendChild(totalBar);
+  }
 
   const wonOnly = totalCoupons - document.querySelectorAll(".coupon-chip.zero").length;
   document.getElementById("redeemBadge").textContent = `${usedCount}/${wonOnly} 已用`;
@@ -675,8 +810,175 @@ function renderAll() {
   renderStats();
 }
 
+// --- Settings ---
+const API_KEY_STORAGE = "mo_gemini_key";
+document.getElementById("settingsToggle").onclick = () => {
+  document.getElementById("settingsPanel").classList.toggle("open");
+  document.getElementById("apiKeyInput").value = localStorage.getItem(API_KEY_STORAGE) || "";
+};
+document.getElementById("saveApiKey").onclick = () => {
+  const key = document.getElementById("apiKeyInput").value.trim();
+  if (key) localStorage.setItem(API_KEY_STORAGE, key);
+  else localStorage.removeItem(API_KEY_STORAGE);
+  document.getElementById("settingsPanel").classList.remove("open");
+};
+
+// --- OCR: Screenshot recognition ---
+function initOCR() {
+  const memberSel = document.getElementById("ocrMember");
+  memberSel.innerHTML = MEMBERS.map(m =>
+    `<option value="${m}" ${m === state.currentMember ? "selected" : ""}>${m}</option>`
+  ).join("");
+}
+
+let ocrImageBase64 = null;
+
+document.getElementById("ocrFileInput").onchange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    ocrImageBase64 = ev.target.result.split(",")[1]; // strip data:...;base64,
+    const preview = document.getElementById("ocrPreview");
+    preview.src = ev.target.result;
+    preview.style.display = "block";
+    document.getElementById("ocrFileLabel").classList.add("has-file");
+    document.getElementById("ocrFileLabel").childNodes[0].textContent = file.name + " ";
+    document.getElementById("ocrBtn").disabled = false;
+    document.getElementById("ocrResult").style.display = "none";
+    document.getElementById("ocrStatus").textContent = "";
+  };
+  reader.readAsDataURL(file);
+};
+
+document.getElementById("ocrBtn").onclick = async () => {
+  const apiKey = localStorage.getItem(API_KEY_STORAGE);
+  if (!apiKey) {
+    document.getElementById("ocrStatus").textContent = "請先在設定輸入 Gemini API Key";
+    return;
+  }
+  if (!ocrImageBase64) return;
+
+  const btn = document.getElementById("ocrBtn");
+  const status = document.getElementById("ocrStatus");
+  btn.disabled = true;
+  btn.textContent = "分析中...";
+  status.textContent = "正在發送截圖到 Gemini...";
+
+  try {
+    const resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              {
+                text: `你是澳門「2026社區消費大獎賞」抽獎結果分析器。
+
+分析這張截圖，提取以下資訊：
+1. 支付平台名稱（必須是以下之一：中銀、大豐、國際、MPay、UePay、工商、AliPay、廣發）
+2. 三次抽獎結果（每次結果是以下之一：0（未中獎）、10、20、50、100、200，單位為澳門元）
+
+請嚴格按以下 JSON 格式回覆，不要加任何其他文字：
+{"platform":"平台名","results":[數字,數字,數字]}
+
+如果無法識別，回覆：{"platform":"","results":[0,0,0],"error":"無法識別"}`
+              },
+              {
+                inlineData: {
+                  mimeType: "image/jpeg",
+                  data: ocrImageBase64
+                }
+              }
+            ]
+          }]
+        })
+      }
+    );
+
+    if (!resp.ok) {
+      const err = await resp.text();
+      throw new Error(`API 錯誤 ${resp.status}: ${err}`);
+    }
+
+    const json = await resp.json();
+    const text = json.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+    // Extract JSON from response
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("無法解析回覆: " + text);
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    if (parsed.error) {
+      status.textContent = "識別失敗: " + parsed.error;
+      btn.disabled = false;
+      btn.textContent = "分析截圖";
+      return;
+    }
+
+    // Validate platform
+    const platform = parsed.platform;
+    if (!PLATFORMS.includes(platform)) {
+      status.textContent = `無法匹配平台「${platform}」，請手動輸入`;
+      btn.disabled = false;
+      btn.textContent = "分析截圖";
+      return;
+    }
+
+    // Validate results
+    const results = (parsed.results || []).map(r => {
+      const n = +r;
+      return COUPON_VALUES.includes(n) ? n : 0;
+    });
+    while (results.length < 3) results.push(0);
+
+    // Show result for confirmation
+    const resultDiv = document.getElementById("ocrResult");
+    resultDiv.style.display = "block";
+    resultDiv.innerHTML = `
+      <div class="result-row"><span class="result-label">平台</span><span class="result-value">${platform}</span></div>
+      <div class="result-row"><span class="result-label">結果 1</span><span class="result-value">${results[0] ? "$" + results[0] : "未中獎"}</span></div>
+      <div class="result-row"><span class="result-label">結果 2</span><span class="result-value">${results[1] ? "$" + results[1] : "未中獎"}</span></div>
+      <div class="result-row"><span class="result-label">結果 3</span><span class="result-value">${results[2] ? "$" + results[2] : "未中獎"}</span></div>
+      <button class="ocr-confirm-btn" id="ocrConfirmBtn">確認寫入</button>
+    `;
+    status.textContent = "請確認以上結果";
+
+    document.getElementById("ocrConfirmBtn").onclick = () => {
+      const member = document.getElementById("ocrMember").value;
+      const mw = data.weeks[state.currentWeek][member];
+      mw.draws[platform] = { merchant: "", spentAmount: 50, results: results.slice(0, 3) };
+      saveData(data);
+      // Reset OCR UI
+      ocrImageBase64 = null;
+      document.getElementById("ocrPreview").style.display = "none";
+      document.getElementById("ocrFileLabel").classList.remove("has-file");
+      document.getElementById("ocrFileLabel").childNodes[0].textContent = "點擊上傳抽獎結果截圖";
+      document.getElementById("ocrFileInput").value = "";
+      resultDiv.style.display = "none";
+      status.textContent = `已寫入 ${member} 的 ${platform} 抽獎記錄`;
+      // Refresh if viewing same member
+      if (member === state.currentMember) {
+        renderPlatforms();
+        renderCoupons();
+        renderStats();
+      }
+    };
+
+    btn.textContent = "分析截圖";
+    btn.disabled = false;
+  } catch (err) {
+    status.textContent = "錯誤: " + err.message;
+    btn.textContent = "分析截圖";
+    btn.disabled = false;
+  }
+};
+
 // Init
 state.currentWeek = getCurrentWeek();
+initOCR();
 renderAll();
 </script>
 </body>
